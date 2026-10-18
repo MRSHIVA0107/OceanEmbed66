@@ -1,0 +1,157 @@
+{
+  "project": "OceanEmbed-Lite ST",
+  "version": "4.0-defensible",
+  "domain": {
+    "name": "Bay of Bengal",
+    "lat_bounds": [
+      5.125,
+      21.875
+    ],
+    "lon_bounds": [
+      80.125,
+      94.875
+    ],
+    "grid_shape": [
+      68,
+      60
+    ],
+    "resolution_deg": 0.25,
+    "total_cells": 4080,
+    "ocean_cells": 3154,
+    "ocean_fraction": 0.773
+  },
+  "standard_depths_meters": [
+    0,
+    50,
+    100,
+    200,
+    500,
+    1000
+  ],
+  "input_configurations": {
+    "core_6": {
+      "SST": {
+        "units": "degC",
+        "min_phys": 18.0,
+        "max_phys": 34.0,
+        "source": "OSTIA L4 Foundation SST (0.05\u00b0 -> 0.25\u00b0)"
+      },
+      "SLA": {
+        "units": "meters",
+        "min_phys": -0.8,
+        "max_phys": 0.8,
+        "source": "CMEMS DUACS Altimetry (0.25\u00b0)"
+      },
+      "U_cur": {
+        "units": "m/s",
+        "min_phys": -2.5,
+        "max_phys": 2.5,
+        "source": "OSCAR L4 / CMEMS Geostrophic+Ekman (0.25\u00b0)"
+      },
+      "V_cur": {
+        "units": "m/s",
+        "min_phys": -2.5,
+        "max_phys": 2.5,
+        "source": "OSCAR L4 / CMEMS Geostrophic+Ekman (0.25\u00b0)"
+      },
+      "U_wind": {
+        "units": "m/s",
+        "min_phys": -35.0,
+        "max_phys": 35.0,
+        "source": "ERA5 Reanalysis 10m Zonal Wind (0.25\u00b0)"
+      },
+      "V_wind": {
+        "units": "m/s",
+        "min_phys": -35.0,
+        "max_phys": 35.0,
+        "source": "ERA5 Reanalysis 10m Meridional Wind (0.25\u00b0)"
+      }
+    },
+    "core_7_extension": {
+      "SSS": {
+        "units": "PSU",
+        "min_phys": 20.0,
+        "max_phys": 38.0,
+        "source": "SMAP L4 (Core-7 pipeline ablation)"
+      }
+    }
+  },
+  "chronological_partitions": {
+    "training_block": {
+      "start": "2018-01-01",
+      "end": "2022-11-30",
+      "days": 1795,
+      "role": "Train model, fit scalers and climatology"
+    },
+    "guard_gap_1": {
+      "start": "2022-12-01",
+      "end": "2022-12-31",
+      "days": 31,
+      "role": "One-month seasonal buffer (quarantine)"
+    },
+    "validation_block": {
+      "start": "2023-01-01",
+      "end": "2023-04-30",
+      "days": 120,
+      "role": "Hyperparameter tuning & early stopping"
+    },
+    "guard_gap_2": {
+      "start": "2023-05-01",
+      "end": "2023-05-31",
+      "days": 31,
+      "role": "Pre-monsoon buffer (quarantine)"
+    },
+    "test_block": {
+      "start": "2023-06-01",
+      "end": "2023-08-31",
+      "days": 92,
+      "role": "Peak Southwest Monsoon holdout evaluation"
+    }
+  },
+  "train_only_depth_scalers": {
+    "0m": {
+      "mean": 29.15,
+      "std": 0.85,
+      "min": 25.2,
+      "max": 32.1
+    },
+    "50m": {
+      "mean": 27.6,
+      "std": 1.45,
+      "min": 22.1,
+      "max": 30.5
+    },
+    "100m": {
+      "mean": 21.8,
+      "std": 2.1,
+      "min": 16.5,
+      "max": 26.8
+    },
+    "200m": {
+      "mean": 13.9,
+      "std": 1.15,
+      "min": 11.2,
+      "max": 17.0
+    },
+    "500m": {
+      "mean": 8.75,
+      "std": 0.55,
+      "min": 7.5,
+      "max": 10.2
+    },
+    "1000m": {
+      "mean": 5.8,
+      "std": 0.3,
+      "min": 5.1,
+      "max": 6.8
+    }
+  },
+  "audit_checks": {
+    "cell_centered_registration": "PASS",
+    "ascending_lat_lon_orientation": "PASS",
+    "strictly_causal_7day_history": "PASS",
+    "quarantine_gaps_present": "PASS",
+    "scalers_fit_on_train_only": "PASS",
+    "nan_or_zero_channel_bleed_in_core6": "PASS (Core-6 is strictly 6 channels)"
+  }
+}

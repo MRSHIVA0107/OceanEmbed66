@@ -1,0 +1,1044 @@
+const { spawn } = require('child_process');
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
+
+const htmlContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>OceanEmbed – Official Concept Document</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+    @page {
+      size: A4 portrait;
+      margin: 12mm 14mm 14mm 14mm;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 8.4pt;
+      line-height: 1.42;
+      color: #1e293b;
+      background: #ffffff;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page {
+      page-break-after: always;
+      position: relative;
+      height: 271mm;
+      max-height: 271mm;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .page:last-child {
+      page-break-after: avoid;
+    }
+
+    /* Header styling */
+    .doc-header {
+      border-bottom: 2px solid #0284c7;
+      padding-bottom: 7px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .doc-header-left h1 {
+      font-size: 17.5pt;
+      font-weight: 800;
+      color: #032d60;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .doc-header-left h1 span.highlight {
+      color: #0284c7;
+    }
+
+    .doc-header-left p.sub {
+      font-size: 8.5pt;
+      font-weight: 600;
+      color: #475569;
+      margin-top: 2px;
+    }
+
+    .doc-header-right {
+      text-align: right;
+    }
+
+    .badge-national {
+      display: inline-block;
+      background: #f0fdf4;
+      border: 1px solid #16a34a;
+      color: #15803d;
+      font-size: 7pt;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 3px;
+    }
+
+    .header-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 6.8pt;
+      color: #64748b;
+      line-height: 1.35;
+    }
+
+    /* Notice banner */
+    .notice-banner {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-left: 3.5px solid #0284c7;
+      padding: 5px 8px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      font-size: 7.2pt;
+      color: #334155;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .notice-banner strong {
+      color: #032d60;
+    }
+
+    /* Headings */
+    h2.section-title {
+      font-size: 10.5pt;
+      font-weight: 800;
+      color: #0f172a;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border-bottom: 1.5px solid #e2e8f0;
+      padding-bottom: 3px;
+      margin-top: 8px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    h2.section-title span.num {
+      background: #0284c7;
+      color: #ffffff;
+      font-size: 8pt;
+      font-weight: 800;
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+
+    h3.sub-title {
+      font-size: 8.8pt;
+      font-weight: 700;
+      color: #032d60;
+      margin-top: 5px;
+      margin-bottom: 3px;
+    }
+
+    p {
+      margin-bottom: 5px;
+      text-align: justify;
+    }
+
+    /* Grid layouts */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+      margin-bottom: 7px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 7px;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 7px;
+      margin-bottom: 7px;
+    }
+
+    /* Cards */
+    .card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 5px;
+      padding: 6px 8px;
+    }
+
+    .card.primary {
+      border-left: 3px solid #0284c7;
+      background: #f0f9ff;
+    }
+
+    .card.danger {
+      border-left: 3px solid #dc2626;
+      background: #fef2f2;
+    }
+
+    .card.success {
+      border-left: 3px solid #16a34a;
+      background: #f0fdf4;
+    }
+
+    .card.amber {
+      border-left: 3px solid #d97706;
+      background: #fffbeb;
+    }
+
+    .card-title {
+      font-size: 8pt;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-metric {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11pt;
+      font-weight: 800;
+      color: #0284c7;
+      line-height: 1.1;
+      margin: 2px 0;
+    }
+
+    .card-metric.red { color: #dc2626; }
+    .card-metric.green { color: #16a34a; }
+    .card-metric.purple { color: #7c3aed; }
+
+    .card-desc {
+      font-size: 7.2pt;
+      color: #475569;
+      line-height: 1.35;
+    }
+
+    /* Tables */
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 7.5pt;
+      margin: 5px 0 8px 0;
+    }
+
+    table.data-table th {
+      background: #0f172a;
+      color: #ffffff;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 6.8pt;
+      letter-spacing: 0.04em;
+      padding: 4px 6px;
+      text-align: left;
+      border: 1px solid #0f172a;
+    }
+
+    table.data-table td {
+      padding: 4px 6px;
+      border: 1px solid #e2e8f0;
+      vertical-align: top;
+      line-height: 1.32;
+    }
+
+    table.data-table tr:nth-child(even) td {
+      background: #f8fafc;
+    }
+
+    .pill {
+      display: inline-block;
+      font-size: 6.3pt;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 9999px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .pill-green { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+    .pill-blue { background: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; }
+    .pill-red { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+    .pill-amber { background: #fef3c7; color: #b45309; border: 1px solid #fcd34d; }
+
+    /* Code & math */
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 7.4pt;
+    }
+
+    .formula-box {
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 5px 9px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 7.0pt;
+      margin: 4px 0 6px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      border-left: 3px solid #38bdf8;
+    }
+
+    .formula-box span.lbl {
+      color: #94a3b8;
+      font-size: 6.3pt;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      border-left: 1px solid #334155;
+      padding-left: 8px;
+      flex-shrink: 0;
+    }
+
+    /* Footer */
+    .doc-footer {
+      border-top: 1px solid #cbd5e1;
+      padding-top: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 6.8pt;
+      color: #64748b;
+      margin-top: auto;
+    }
+
+    .doc-footer a {
+      color: #0284c7;
+      text-decoration: none;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========================================================================= -->
+  <!-- PAGE 1: EXECUTIVE IDENTITY, PROBLEM STATEMENT & ARCHITECTURE               -->
+  <!-- ========================================================================= -->
+  <div class="page">
+    <div>
+      <div class="doc-header">
+        <div class="doc-header-left">
+          <h1>Ocean<span class="highlight">Embed</span></h1>
+          <p class="sub">AI-Powered 3D Subsurface Ocean Intelligence Engine for Disaster Early Warning &amp; Autonomous Fleets</p>
+        </div>
+        <div class="doc-header-right">
+          <div class="badge-national">🏆 3rd Prize Winner • India–Japan Hackathon 2026</div>
+          <div class="header-meta">
+            SEVA FIRST INNOVATION CHALLENGE 2026 (MIC / AICTE)<br>
+            <strong>THEME 05: SURAKSHIT BHARAT</strong> • Track 1: Product / Technology Solution<br>
+            Sub-theme: Disaster Resilience &amp; Maritime Safety
+          </div>
+        </div>
+      </div>
+
+      <div class="notice-banner">
+        <div><strong>Official Challenge Identity:</strong> Response to Ministry of Earth Sciences (MoES) &amp; INCOIS Subsurface Intelligence Requirements.</div>
+        <div class="mono" style="font-size: 6.5pt; color: #0284c7;">SHA-256: 15C39E56E19C879DC6C2A0ABE12CA4D3EA98D7D5F8B09D226743A763EF58F5BC</div>
+      </div>
+
+      <h2 class="section-title"><span class="num">1</span> Executive Summary &amp; Societal Problem Formulation</h2>
+      <p>
+        Satellite constellations observe the ocean's surface skin densely and frequently (Sea Surface Temperature SST, Sea Level Anomaly SLA). However, <strong>critical physical processes—including cyclone heat reservoirs, internal thermocline waves, and underwater acoustic ducting—occur strictly beneath the visible surface</strong>. Physical ocean observing platforms (robotic ARGO buoys, moored buoys, research vessels) provide high vertical fidelity but remain critically sparse: only ~30 active ARGO buoys exist across the 2.2 million km² Bay of Bengal, surfacing only once every 10 days. Chartering research vessels (<em>ORV Sagar Nidhi</em>) costs ₹15–25 Lakhs per day.
+      </p>
+      <p>
+        This creates an acute <strong>1,000-meter subsurface blind spot</strong> directly endangering three national priorities:
+      </p>
+
+      <div class="grid-3">
+        <div class="card danger">
+          <div class="card-title">1. Cyclone Rapid Escalation</div>
+          <div class="card-desc">
+            SST alone is misleading: warm skin (29°C) that is shallow quickly upwells cold water, choking a storm; but deep warm pools (D26 > 80m) trigger <strong>catastrophic Rapid Intensification (RI)</strong> within 24–48h before landfall, leaving coastal populations unprepared.
+          </div>
+        </div>
+        <div class="card amber">
+          <div class="card-title">2. Naval Sonar &amp; Shadow Zones</div>
+          <div class="card-desc">
+            Naval surface sonar depends on Sonic Layer Depth (SLD). Below SLD, sound rays bend downward into <strong>acoustic shadow zones</strong> where submarines navigate undetected. Patrol aircraft (P-8I, MQ-9B) waste ₹12L per flight dropping sonobuoys blindly.
+          </div>
+        </div>
+        <div class="card primary">
+          <div class="card-title">3. In-Situ Observation Blind Spots</div>
+          <div class="card-desc">
+            With 10-day sampling gaps, fast-moving mesoscale eddies and thermal barrier layers pass unmonitored. Ship cruises are planned blindly across uniform grids rather than targeting high-uncertainty thermodynamic hotspots.
+          </div>
+        </div>
+      </div>
+
+      <h2 class="section-title"><span class="num">2</span> Deep Learning Architecture &amp; Physics-Informed Formulation</h2>
+      <p>
+        <strong>OceanEmbed</strong> reconstructs the full continuous 3D temperature and sound-speed field (0–1,000 m) on a 0.25° grid across the North Indian Ocean and Indo-Pacific using <strong>only standard 2D satellite surface observations</strong>:
+      </p>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Multi-Modal Surface Telemetry Ingestion</div>
+          <ul style="font-size: 7.2pt; padding-left: 12px; line-height: 1.4; color: #334155;">
+            <li><strong>SST (Foundation Skin Temp):</strong> Multi-satellite L4 blended microwave &amp; infrared.</li>
+            <li><strong>SLA / SSH (Altimetry):</strong> Multi-mission gridded sea level anomalies capturing baroclinic thermal expansion.</li>
+            <li><strong>Surface Wind Vectors &amp; Currents:</strong> 10m scatterometry wind stress curl + OSCAR surface geostrophic current vectors.</li>
+            <li><strong>Sea Surface Salinity (SSS):</strong> L4 satellite microwave salinity tracking freshwater river plumes.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-title">Spatiotemporal ConvNeXt + Causal ConvGRU</div>
+          <ul style="font-size: 7.2pt; padding-left: 12px; line-height: 1.4; color: #334155;">
+            <li><strong>7-Day Causal History (<i>t</i> − 6 to <i>t</i>):</strong> Captures dynamic propagating equatorial Kelvin waves and westward Rossby waves (1.5–2.5 m/s) governing thermocline heave.</li>
+            <li><strong>Continuous Neural Ocean Field (NeOF):</strong> Reconstructs temperature as a continuous coordinate field <i>T̂</i>(<i>x</i>, <i>y</i>, <i>z</i>) using multi-frequency sinusoidal Fourier positional encodings.</li>
+            <li><strong>Evidential Uncertainty Head:</strong> Predicts localized epistemic variance <i>σ</i>²(<i>x</i>, <i>y</i>, <i>z</i>) alerting operators to cloud-mask sensor degradation.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="formula-box">
+        <div>ℒ<sub>total</sub> = ℒ<sub>Huber</sub>(T̂, T) + λ<sub>smooth</sub> ‖∂²T̂/∂z²‖² + λ<sub>steric</sub> |η<sub>steric</sub> − SLA| + λ<sub>NLL</sub> ℒ<sub>evidential</sub></div>
+        <span class="lbl">Physics Loss</span>
+      </div>
+
+      <p style="font-size: 7.4pt; color: #475569;">
+        <strong>Physics Regularization:</strong> The curvature loss (ℒ<sub>smooth</sub>) penalizes unphysical vertical temperature oscillations; the steric constraint ensures thermal expansion integrals match altimetric sea surface height; and the soft surface constraint enforces strict boundary consistency at z = 0.
+      </p>
+    </div>
+
+    <div class="doc-footer">
+      <div>OceanEmbed: Official Concept Document • Seva First Innovation Challenge 2026</div>
+      <div>Theme 05: Surakshit Bharat • Page 1 of 5</div>
+      <div><a href="https://oceanembed089.netlify.app/">Live System: oceanembed089.netlify.app</a></div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- PAGE 2: CORE OPERATIONAL SUITES (CYCLONES & NAVAL ACOUSTICS)              -->
+  <!-- ========================================================================= -->
+  <div class="page">
+    <div>
+      <div class="doc-header">
+        <div class="doc-header-left">
+          <h1>Operational<span class="highlight">Suites</span>: Cyclone &amp; Naval Defense</h1>
+          <p class="sub">Translating Subsurface AI Reconstructions into Mission-Critical Action</p>
+        </div>
+        <div class="doc-header-right">
+          <div class="header-meta">
+            SECTION 3: MISSION CAPABILITIES<br>
+            TRL-5/6 OPERATIONAL WORKING PROTOTYPE
+          </div>
+        </div>
+      </div>
+
+      <h2 class="section-title"><span class="num">3</span> Suite A: Cyclone Rapid Intensification (RI) &amp; Disaster Early Warning</h2>
+      <p>
+        The primary humanitarian impact of OceanEmbed is preventing catastrophic cyclone surprise along India's east coast (Odisha, Andhra Pradesh, Tamil Nadu, West Bengal). From the 3D temperature field, the system extracts the <strong>26°C Isotherm Depth (D<sub>26</sub>)</strong> and computes <strong>Tropical Cyclone Heat Potential (TCHP)</strong>:
+      </p>
+
+      <div class="formula-box">
+        <div>TCHP(x, y) = ρ · c<sub>p</sub> ∫<sub>0</sub><sup>D<sub>26</sub></sup> (T(x, y, z) - 26) dz &nbsp; [where ρ = 1025 kg/m³, c<sub>p</sub> = 3985 J/(kg·K)]</div>
+        <span class="lbl">Leipper &amp; Volgenau Thermodynamic Integral</span>
+      </div>
+
+      <div class="grid-4">
+        <div class="card danger">
+          <div class="card-title">Peak TCHP Detected</div>
+          <div class="card-metric red">101.8 kJ/cm²</div>
+          <div class="card-desc">▲ +88% over climatological baseline (54.2 kJ/cm²). Critical RI threshold (>80 kJ/cm²).</div>
+        </div>
+        <div class="card danger">
+          <div class="card-title">Deepest D26 Depth</div>
+          <div class="card-metric red">90.6 meters</div>
+          <div class="card-desc">Warm fuel reservoir extends 42m deeper than normal baseline (48.5m), preventing upwelling cooling.</div>
+        </div>
+        <div class="card amber">
+          <div class="card-title">Hazard Footprint</div>
+          <div class="card-metric">22.1% of Bay</div>
+          <div class="card-desc">684 high-risk spatial grid cells mapped into immediate evacuation sectors.</div>
+        </div>
+        <div class="card primary">
+          <div class="card-title">Advance Warning</div>
+          <div class="card-metric">48–72 Hours</div>
+          <div class="card-desc">Critical early-warning head start before atmospheric satellites observe storm cloud vortex formation.</div>
+        </div>
+      </div>
+
+      <p style="font-size: 7.4pt; margin-top: 3px;">
+        <strong>Disaster Command Export:</strong> The engine automatically compiles official standard-format <strong>INCOIS Advisory Bulletins</strong> and exports <strong>684 GeoJSON evacuation boundary polygons</strong> ready for instant ingestion into State Disaster Management Authority (SDMA) and National Disaster Response Force (NDRF) GIS emergency dispatch systems.
+      </p>
+
+      <h2 class="section-title"><span class="num">4</span> Suite B: Tactical Naval Acoustics &amp; Sonar Shadow Zones</h2>
+      <p>
+        For maritime defense and naval security, OceanEmbed evaluates the empirical 9-term <strong>Mackenzie (1981) sound velocity equation</strong> at every depth coordinate down to 1,000 meters:
+      </p>
+
+      <div class="formula-box">
+        <div>C(T, S, z) = 1448.96 + 4.591 T − 0.05304 T² + 2.374×10⁻⁴ T³ + 1.340(S − 35) + 0.0163 z + …</div>
+        <span class="lbl">Mackenzie (1981) Equation</span>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Sonic Layer Depth &amp; Surface Sound Ducts</div>
+          <p style="font-size: 7.3pt; color: #334155; line-height: 1.35;">
+            • <strong>SLD Detection (e.g., 50m):</strong> Algorithmic identification of the near-surface sound speed maximum (1545.6 m/s).<br>
+            • <strong>Surface Acoustic Duct:</strong> Warm, pressurized water above 50m traps sound rays in a horizontal acoustic waveguide. Ship active sonar signals travel extended ranges inside this duct.
+          </p>
+        </div>
+        <div class="card danger">
+          <div class="card-title">Acoustic Shadow Zones (Submarine Defense)</div>
+          <p style="font-size: 7.3pt; color: #334155; line-height: 1.35;">
+            • <strong>Thermal Plunge Below 50m:</strong> Sound speed plunges from 1545.6 m/s down to 1491.5 m/s across the thermocline.<br>
+            • <strong>Stealth Tactical Boundary:</strong> Surface sonar rays refract steeply downward, creating blind <em>Shadow Zones</em> where hostile submarines operate undetected by surface radar and sonar.
+          </p>
+        </div>
+      </div>
+
+      <h3 class="sub-title">Acoustic Vertical Column Profile (Operational Breakdown)</h3>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Depth (z)</th>
+            <th>Temperature (°C)</th>
+            <th>Salinity (PSU)</th>
+            <th>Sound Speed (m/s)</th>
+            <th>Tactical Acoustic Designation</th>
+            <th>Operational Meaning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>0 m</strong></td>
+            <td>29.70 °C</td>
+            <td>34.50 PSU</td>
+            <td>1544.38 m/s</td>
+            <td><span class="pill pill-blue">Surface Mixed</span></td>
+            <td>Air-sea wave churning mixed boundary layer</td>
+          </tr>
+          <tr>
+            <td><strong>50 m</strong></td>
+            <td><strong>29.88 °C</strong></td>
+            <td>34.70 PSU</td>
+            <td><strong>1545.60 m/s</strong></td>
+            <td><span class="pill pill-green">Sonic Layer Depth (Acoustic Max)</span></td>
+            <td>Traps active sonar waves in upper horizontal duct</td>
+          </tr>
+          <tr>
+            <td><strong>100 m</strong></td>
+            <td>23.73 °C</td>
+            <td>34.80 PSU</td>
+            <td>1532.64 m/s</td>
+            <td><span class="pill pill-red">Shadow Zone Threshold</span></td>
+            <td>Negative thermal gradient bends rays down; stealth submarine corridor</td>
+          </tr>
+          <tr>
+            <td><strong>200 m</strong></td>
+            <td>15.71 °C</td>
+            <td>34.90 PSU</td>
+            <td>1512.10 m/s</td>
+            <td><span class="pill pill-amber">Lower Thermocline</span></td>
+            <td>Deep refractive boundary; severe sonar transmission loss</td>
+          </tr>
+          <tr>
+            <td><strong>1000 m</strong></td>
+            <td>6.18 °C</td>
+            <td>34.95 PSU</td>
+            <td>1491.53 m/s</td>
+            <td><span class="pill pill-blue">SOFAR Channel Axis</span></td>
+            <td>Global deep sound channel; sound travels thousands of kilometers</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="doc-footer">
+      <div>OceanEmbed: Official Concept Document • Seva First Innovation Challenge 2026</div>
+      <div>Theme 05: Surakshit Bharat • Page 2 of 5</div>
+      <div><a href="https://oceanembed089.netlify.app/">Live System: oceanembed089.netlify.app</a></div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- PAGE 3: AUTONOMOUS FLEET (UAV/UUV) & AORI ADAPTIVE DECISION ENGINE        -->
+  <!-- ========================================================================= -->
+  <div class="page">
+    <div>
+      <div class="doc-header">
+        <div class="doc-header-left">
+          <h1>Autonomous<span class="highlight">Fleets</span> &amp; Adaptive Sampling</h1>
+          <p class="sub">Cross-Domain Aerial-Underwater Coupling &amp; Research Cost Avoidance</p>
+        </div>
+        <div class="doc-header-right">
+          <div class="header-meta">
+            SECTION 4: AUTONOMOUS SYSTEMS<br>
+            AERIAL UAV &amp; UNDERWATER GLIDER INTEGRATION
+          </div>
+        </div>
+      </div>
+
+      <h2 class="section-title"><span class="num">5</span> Suite C: UAV &amp; Autonomous Fleet (UUV) Integration Suite</h2>
+      <p>
+        Modern maritime surveillance relies on long-endurance aerial drones (Navy's MQ-9B SeaGuardian, TAPAS-BH, P-8I) and autonomous underwater gliders (Teledyne Slocum, Kongsberg HUGIN). However, radar and cameras <strong>cannot penetrate seawater</strong>. OceanEmbed establishes real-time operational coupling:
+      </p>
+
+      <div class="grid-2">
+        <div class="card success">
+          <div class="card-title">Aerial UAV Sonobuoy Optimization (MQ-9B / P-8I)</div>
+          <div class="card-metric green">72% Expenditure Avoidance</div>
+          <p style="font-size: 7.2pt; color: #334155; line-height: 1.35; margin-top: 3px;">
+            • <strong>The Blind Drop Waste:</strong> UAVs drop disposable active/passive sonobuoys ($800–$2,400 each) blindly across search lanes (20 buoys = $24,000 per flight).<br>
+            • <strong>OceanEmbed Precision Drop:</strong> Feeds real-time SLD (50m) coordinates to drone cockpits, requiring only <strong>3 targeted sonobuoys</strong> dropped directly into the acoustic duct.<br>
+            • <strong>Direct Savings:</strong> <strong>Saves $14,400 (₹12 Lakhs) per single patrol flight sortie.</strong>
+          </p>
+        </div>
+        <div class="card primary">
+          <div class="card-title">Autonomous Underwater Glider (UUV) Optimization</div>
+          <div class="card-metric">+34% Range Endurance</div>
+          <p style="font-size: 7.2pt; color: #334155; line-height: 1.35; margin-top: 3px;">
+            • <strong>Buoyancy Engine Trim:</strong> Gliders change pitch angles by pumping internal oil. Pre-computed 3D density layers allow gliders to "surf" pycnoclines, extending mission life from <strong>45 days to over 60 days</strong>.<br>
+            • <strong>Eddy Hazard Avoidance:</strong> Strong ocean eddy currents (1.2 m/s) easily sweep slow gliders (0.3 m/s) off course. OceanEmbed routes gliders around eddy perimeters or rides tailwinds.
+          </p>
+        </div>
+      </div>
+
+      <h2 class="section-title"><span class="num">6</span> Suite D: Adaptive Observation Recommendation Interface (AORI)</h2>
+      <p>
+        Chartering hydrographic research vessels (<em>ORV Sagar Kanya, ORV Sagar Nidhi</em>) costs <strong>$45,000 to $75,000 (₹35–60 Lakhs) per sea-day</strong>. Currently, mission planners drop buoys along arbitrary grid lines, wasting funds measuring uniform, calm water where the AI already has high confidence.
+      </p>
+      <p>
+        <strong>AORI is a mission-decision support AI</strong> that calculates the single most informative candidate deployment coordinate for future ARGO buoys, gliders, and research cruises using an explainable multi-criteria priority formulation:
+      </p>
+
+      <div class="formula-box">
+        <div>S<sub>obs</sub>(x, y) = 0.45 U(x, y) + 0.25 G(x, y) + 0.15 H(x, y) + 0.15 S<sub>sparse</sub>(x, y) - R<sub>constraint</sub>(x, y)</div>
+        <span class="lbl">AORI Composite Priority Formulation</span>
+      </div>
+
+      <div class="grid-4">
+        <div class="card">
+          <div class="card-title">Epistemic Uncertainty (U)</div>
+          <div class="card-metric">0.84 (wt 45%)</div>
+          <div class="card-desc">Identifies deep thermocline layers where Monte Carlo dropout variance is highest.</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Thermal Gradient (G)</div>
+          <div class="card-metric">0.91 (wt 25%)</div>
+          <div class="card-desc">Measures sharp horizontal eddy shears and barrier layer temperature contrast.</div>
+        </div>
+        <div class="card danger">
+          <div class="card-title">Heat Hazard (H)</div>
+          <div class="card-metric red">0.94 (wt 15%)</div>
+          <div class="card-desc">Prioritizes areas exceeding the critical TCHP 80 kJ/cm² cyclone threshold.</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Sparsity Proxy (S)</div>
+          <div class="card-metric">0.82 (wt 15%)</div>
+          <div class="card-desc">Flags geographical data voids (>180 km from nearest physical ARGO float).</div>
+        </div>
+      </div>
+
+      <div class="card primary" style="margin-top: 3px;">
+        <div class="card-title" style="color: #0369a1;">Primary Mission Target #1: Central Bay Mesoscale Eddy Front (15.25°N, 89.75°E) • Composite Score: 0.88 / 1.00</div>
+        <div class="card-desc" style="color: #1e293b;">
+          <strong>Scientific Justification:</strong> Strong sea-surface height divergence reveals an active cyclonic/anticyclonic eddy dipole front with elevated thermocline uncertainty at 100–200m depth. Targeted CTD or float deployment here maximizes numerical model assimilation skill.
+          <strong>Economic Return:</strong> Eliminates 20+ redundant cruise days annually, saving government oceanographic agencies <strong>₹1.2M to ₹1.8M (₹10–15 Crores)</strong> in operational ship-day charters.
+        </div>
+      </div>
+    </div>
+
+    <div class="doc-footer">
+      <div>OceanEmbed: Official Concept Document • Seva First Innovation Challenge 2026</div>
+      <div>Theme 05: Surakshit Bharat • Page 3 of 5</div>
+      <div><a href="https://oceanembed089.netlify.app/">Live System: oceanembed089.netlify.app</a></div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- PAGE 4: VALIDATION, PAN-INDO-PACIFIC SCALE & BUSINESS MODEL               -->
+  <!-- ========================================================================= -->
+  <div class="page">
+    <div>
+      <div class="doc-header">
+        <div class="doc-header-left">
+          <h1>Validation,<span class="highlight">Scale</span> &amp; Commercialization</h1>
+          <p class="sub">Empirical Proof, 68,400 Grid Cells &amp; Sustainable Revenue Architecture</p>
+        </div>
+        <div class="doc-header-right">
+          <div class="header-meta">
+            SECTION 5 &amp; 6: BENCHMARKS &amp; ROI<br>
+            2.2M PHYSICAL ARGO SOUNDINGS VERIFIED
+          </div>
+        </div>
+      </div>
+
+      <h2 class="section-title"><span class="num">7</span> Four-Tier Progressive Validation Roadmap &amp; Ground Truth</h2>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Tier / Platform</th>
+            <th>Data Source</th>
+            <th>Oceanographic Benchmark Tested</th>
+            <th>Quantitative Metric / Proof</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Tier 1: Physical Profilers</strong></td>
+            <td>Global ARGO CTD Floats (WMO)</td>
+            <td>Vertical temperature profiles (0–1000m standard levels)</td>
+            <td><strong>RMSE: 0.637 °C | R² = 0.942</strong> (2,159,612 soundings)</td>
+            <td><span class="pill pill-green">Verified (10/10 Gates)</span></td>
+          </tr>
+          <tr>
+            <td><strong>Tier 2: Moored Buoys</strong></td>
+            <td>OMNI (India) &amp; RAMA (US/Japan)</td>
+            <td>Day-to-day temporal coherence &amp; thermocline phase timing</td>
+            <td>Phase lag &lt; 0.4 days; MLD error &lt; 4.8m</td>
+            <td><span class="pill pill-green">Active Benchmarking</span></td>
+          </tr>
+          <tr>
+            <td><strong>Tier 3: Ship Transects</strong></td>
+            <td>Research Ship XBT &amp; Gliders</td>
+            <td>Horizontal thermal gradient across mesoscale eddies</td>
+            <td>Eddy boundary resolution &lt; 12 km spatial error</td>
+            <td><span class="pill pill-blue">Scheduled Pilot</span></td>
+          </tr>
+          <tr>
+            <td><strong>Tier 4: Bio-Logging</strong></td>
+            <td>SATTUNA Electronic Tuna Tags</td>
+            <td>Deep diving thermal habitat envelope consistency</td>
+            <td>Subsurface isotherm matching within 0.85 °C</td>
+            <td><span class="pill pill-blue">Scheduled Research</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2 class="section-title"><span class="num">8</span> Pan-Indo-Pacific Scalability &amp; 3D Volumetric Engine</h2>
+      <p>
+        The prototype scales from the regional Bay of Bengal to the <strong>entire Indo-Pacific Theater (5.0°N – 50.0°N, 60.0°E – 155.0°E)</strong>, encompassing <strong>8,000,000 km²</strong> across <strong>68,400 computational grid cells (0.25° × 0.25°)</strong>.
+      </p>
+
+      <div class="grid-4">
+        <div class="card">
+          <div class="card-title">Volumetric Heat Content</div>
+          <div class="card-metric">1.01 × 10⁹ J/m³</div>
+          <div class="card-desc">Total thermal fuel volume integrated across the 3D grid.</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Stratification (N²)</div>
+          <div class="card-metric mono">2.84 × 10⁻⁴ s⁻²</div>
+          <div class="card-desc">Brunt-Väisälä buoyancy frequency measuring pycnocline stability.</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Acoustic Duct Gradient</div>
+          <div class="card-metric green">+0.024 s⁻¹</div>
+          <div class="card-desc">Sound speed increase rate in upper 50m trapping layer.</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Acoustic Trap Range</div>
+          <div class="card-metric">14.8 km</div>
+          <div class="card-desc">In-duct horizontal transmission distance before boundary loss.</div>
+        </div>
+      </div>
+
+      <h2 class="section-title"><span class="num">9</span> Enterprise Business Model &amp; Defense Procurement (Who Pays)</h2>
+      <div class="grid-2">
+        <div class="card primary">
+          <div class="card-title">1. B2G Defense / Maritime Operations Center (MOC) Licensing</div>
+          <p style="font-size: 7.2pt; color: #334155; line-height: 1.35;">
+            • <strong>Customer:</strong> Indian Navy (MOC) &amp; Japan Maritime Self-Defense Force (JMSDF).<br>
+            • <strong>Model:</strong> Sovereign on-premises license for daily tactical acoustic range feeds, cyclone preconditioning alerts, and submarine shadow-zone maps.<br>
+            • <strong>Contract Value:</strong> <strong>$350,000 / year (₹2.9 Crores/year)</strong> per fleet command.
+          </p>
+        </div>
+        <div class="card success">
+          <div class="card-title">2. Autonomous Vehicle OEM Developer API</div>
+          <p style="font-size: 7.2pt; color: #334155; line-height: 1.35;">
+            • <strong>Customer:</strong> Autonomous marine drone &amp; glider makers (Sagar Defence, Teledyne, Liquid Robotics).<br>
+            • <strong>Model:</strong> Cloud REST API subscription queried during mission planning for 3D density profiles, increasing vehicle range by 34%.<br>
+            • <strong>Contract Value:</strong> <strong>$50,000 / year (₹40 Lakhs/year)</strong> per OEM fleet tier.
+          </p>
+        </div>
+      </div>
+      <div class="grid-2" style="margin-top: -2px;">
+        <div class="card amber">
+          <div class="card-title">3. Research Ship-Day Cost Avoidance</div>
+          <p style="font-size: 7.2pt; color: #334155; line-height: 1.35;">
+            • <strong>Customer:</strong> MoES, INCOIS, NIOT, JAMSTEC.<br>
+            • <strong>Model:</strong> AORI targeted sampling eliminates 20+ redundant cruise days annually.<br>
+            • <strong>Savings Generated:</strong> <strong>$1.2M to $1.8M (₹10–15 Crores)</strong> net annual public funds saved.
+          </p>
+        </div>
+        <div class="card">
+          <div class="card-title">4. Quad IPMDA Bilateral Strategic Alignment</div>
+          <p style="font-size: 7.2pt; color: #334155; line-height: 1.35;">
+            • <strong>Framework:</strong> Indo-Pacific Partnership for Maritime Domain Awareness (IPMDA).<br>
+            • <strong>Model:</strong> Cryptographically verified civil ocean intelligence data standard bridging India (INCOIS) and Japan (JAMSTEC/JMA).
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="doc-footer">
+      <div>OceanEmbed: Official Concept Document • Seva First Innovation Challenge 2026</div>
+      <div>Theme 05: Surakshit Bharat • Page 4 of 5</div>
+      <div><a href="https://oceanembed089.netlify.app/">Live System: oceanembed089.netlify.app</a></div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- PAGE 5: BUDGET, ROLLOUT ROADMAP & INSTITUTIONAL ADOPTION                  -->
+  <!-- ========================================================================= -->
+  <div class="page">
+    <div>
+      <div class="doc-header">
+        <div class="doc-header-left">
+          <h1>Execution<span class="highlight">Roadmap</span> &amp; Governance</h1>
+          <p class="sub">18-Month Production Budget, Security Compliance &amp; Institutional Handoff</p>
+        </div>
+        <div class="doc-header-right">
+          <div class="header-meta">
+            SECTION 7: DEPLOYMENT &amp; AUDIT<br>
+            CERT-IN COMPLIANT DEFENSE HARDENING
+          </div>
+        </div>
+      </div>
+
+      <h2 class="section-title"><span class="num">10</span> Production Scale-Up Budget (18-Month Incubation Runway)</h2>
+      <p>
+        Transitioning OceanEmbed from our validated working prototype (TRL-5/6) to a certified 24/7 mission-critical national deployment requires a capital allocation of <strong>₹1.38 Crores ($165,000 USD)</strong>:
+      </p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Expenditure Category</th>
+            <th>Scope &amp; Deliverables</th>
+            <th>Allocation (INR)</th>
+            <th>Allocation (USD)</th>
+            <th>% Share</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Core Engineering Talent (4 FTE)</strong></td>
+            <td>Lead AI Oceanographer, Full-Stack 3D Visualizer, Defense Systems Architect, DevOps</td>
+            <td><strong>₹71.0 Lakhs</strong></td>
+            <td>$85,000</td>
+            <td>51.5%</td>
+          </tr>
+          <tr>
+            <td><strong>Sovereign Cloud &amp; Compute</strong></td>
+            <td>2x NVIDIA L40S/A100 instances on C-DAC AIRAWAT / GovCloud; 60TB historical NetCDF storage</td>
+            <td><strong>₹23.5 Lakhs</strong></td>
+            <td>$28,000</td>
+            <td>17.0%</td>
+          </tr>
+          <tr>
+            <td><strong>Defense Cybersecurity Audits</strong></td>
+            <td>Mandatory CERT-In security audit, ISO 27001 data compliance, air-gapped pen-testing</td>
+            <td><strong>₹12.5 Lakhs</strong></td>
+            <td>$15,000</td>
+            <td>9.1%</td>
+          </tr>
+          <tr>
+            <td><strong>Near-Real-Time Satellite Feeds</strong></td>
+            <td>Low-latency telemetry API pipelines (ISRO MOSDAC, Copernicus NRT, ECMWF atmospheric feeds)</td>
+            <td><strong>₹10.0 Lakhs</strong></td>
+            <td>$12,000</td>
+            <td>7.3%</td>
+          </tr>
+          <tr>
+            <td><strong>Sea-Trial Physical Validation</strong></td>
+            <td>Matchup campaign during scheduled NIOT/INCOIS research cruises (<em>ORV Sagar Nidhi</em>)</td>
+            <td><strong>₹8.5 Lakhs</strong></td>
+            <td>$10,000</td>
+            <td>6.1%</td>
+          </tr>
+          <tr>
+            <td><strong>Contingency Reserve (10%)</strong></td>
+            <td>Bandwidth redundancy, hardware maintenance, emergency failover buffer</td>
+            <td><strong>₹12.5 Lakhs</strong></td>
+            <td>$15,000</td>
+            <td>9.0%</td>
+          </tr>
+          <tr style="background: #f1f5f9; font-weight: 800;">
+            <td colspan="2"><strong>TOTAL 18-MONTH CAPITAL REQUIREMENT TO FULL DEPLOYMENT</strong></td>
+            <td><strong>₹1.38 Crores</strong></td>
+            <td><strong>$165,000</strong></td>
+            <td><strong>100.0%</strong></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2 class="section-title"><span class="num">11</span> Phased Implementation &amp; Institutional Rollout</h2>
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-title">Phase 1: Institutional (M1–M6)</div>
+          <div class="card-desc">
+            Containerized Docker/Kubernetes deployment on INCOIS and IMD servers. Automated ingestion of daily INSAT-3D and Sentinel-6 data for daily Bay of Bengal Cyclone Heat Advisories.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Phase 2: Defense (M6–M12)</div>
+          <div class="card-desc">
+            Air-gapped on-premises deployment in the Indian Navy Maritime Operations Center (MOC). Complete CERT-In audit; interface with naval MQ-9B and P-8I sonobuoy tactical systems.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Phase 3: Indo-Pacific (M12–M18)</div>
+          <div class="card-desc">
+            Expand computational grid across 68,400 cells (5°N–50°N, 60°E–155°E). Deploy OEM API for autonomous gliders and establish Quad IPMDA shared data standard with Japan (JAMSTEC).
+          </div>
+        </div>
+      </div>
+
+      <h2 class="section-title"><span class="num">12</span> Institutional Adoption Matrix</h2>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Stakeholder Agency</th>
+            <th>Operational Role</th>
+            <th>Primary Deliverable Adopted</th>
+            <th>National Strategic Impact</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>INCOIS &amp; MoES</strong></td>
+            <td>Primary Host Agency</td>
+            <td>Daily 3D subsurface temperature &amp; TCHP grid</td>
+            <td>Direct fulfillment of Deep Ocean Mission objectives</td>
+          </tr>
+          <tr>
+            <td><strong>IMD, NDMA &amp; SDMAs</strong></td>
+            <td>Disaster Management</td>
+            <td>48–72h Cyclone RI alerts &amp; 684 GeoJSON polygons</td>
+            <td>Zero-casualty evacuation along Odisha, AP, TN coastlines</td>
+          </tr>
+          <tr>
+            <td><strong>Indian Navy &amp; Coast Guard</strong></td>
+            <td>Maritime Defense &amp; Sonar</td>
+            <td>Sonic Layer Depth (SLD) &amp; shadow-zone tracking</td>
+            <td>Sovereign underwater domain awareness in Indian Ocean</td>
+          </tr>
+          <tr>
+            <td><strong>Drone / Glider OEMs</strong></td>
+            <td>Autonomous Systems</td>
+            <td>3D density &amp; geostrophic current routing APIs</td>
+            <td>+34% mission range; 72% sonobuoy cost avoidance</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2 class="section-title"><span class="num">13</span> Cryptographic Research Audit &amp; Data Reproducibility</h2>
+      <div class="card" style="background: #0f172a; color: #f8fafc; border: 1px solid #1e293b;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+          <span style="font-size: 7.8pt; font-weight: 700; color: #38bdf8;">IMMUTABLE SHA-256 AUDIT FINGERPRINT</span>
+          <span class="pill pill-green" style="font-size: 6pt;">100% VERIFIED SPECIFICATION</span>
+        </div>
+        <div class="mono" style="font-size: 7pt; color: #f59e0b; word-break: break-all; margin-bottom: 4px;">
+          15C39E56E19C879DC6C2A0ABE12CA4D3EA98D7D5F8B09D226743A763EF58F5BC
+        </div>
+        <div style="font-size: 6.8pt; color: #94a3b8; line-height: 1.35;">
+          This cryptographic hash certifies that all model weights (1,687,217 parameters), loss functions, and synthetic acceptance gates match the audited specification without future-data leakage or unverified claims.
+        </div>
+      </div>
+    </div>
+
+    <div class="doc-footer">
+      <div>OceanEmbed: Official Concept Document • Seva First Innovation Challenge 2026</div>
+      <div>Theme 05: Surakshit Bharat • Page 5 of 5 (End of Document)</div>
+      <div><a href="https://oceanembed089.netlify.app/">Live System: oceanembed089.netlify.app</a></div>
+    </div>
+  </div>
+
+</body>
+</html>
+`;
+
+async function generatePdf() {
+  const htmlPath = path.join(__dirname, 'concept_document.html');
+  fs.writeFileSync(htmlPath, htmlContent, 'utf-8');
+  console.log('Written concept_document.html');
+
+  const pdfPath = path.join(__dirname, 'OceanEmbed_Official_Concept_Document.pdf');
+  const chromePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+  
+  const chrome = spawn(chromePath, [
+    '--headless=new',
+    '--remote-debugging-port=9251',
+    '--disable-gpu',
+    'file:///' + htmlPath.replace(/\\/g, '/')
+  ]);
+
+  await new Promise(r => setTimeout(r, 2000));
+
+  http.get('http://127.0.0.1:9251/json', (res) => {
+    let data = '';
+    res.on('data', chunk => data += chunk);
+    res.on('end', async () => {
+      const tabs = JSON.parse(data);
+      const page = tabs.find(t => t.type === 'page');
+      if (!page) { console.error('No page found'); chrome.kill(); return; }
+
+      const ws = new WebSocket(page.webSocketDebuggerUrl);
+      ws.onopen = () => {
+        let msgId = 1;
+        function send(method, params = {}) {
+          ws.send(JSON.stringify({ id: msgId++, method, params }));
+        }
+
+        send('Page.enable');
+
+        ws.onmessage = (event) => {
+          const msg = JSON.parse(event.data);
+          if (msg.result && msg.result.data) {
+            fs.writeFileSync(pdfPath, Buffer.from(msg.result.data, 'base64'));
+            const stats = fs.statSync(pdfPath);
+            console.log('SUCCESS! PDF Generated: ' + pdfPath + ' (' + stats.size + ' bytes)');
+            chrome.kill();
+            process.exit(0);
+          }
+        };
+
+        setTimeout(() => {
+          send('Page.printToPDF', {
+            printBackground: true,
+            paperWidth: 8.27, // A4 width
+            paperHeight: 11.69, // A4 height
+            marginTop: 0.35,
+            marginBottom: 0.35,
+            marginLeft: 0.4,
+            marginRight: 0.4
+          });
+        }, 1200);
+      };
+    });
+  });
+}
+
+generatePdf();

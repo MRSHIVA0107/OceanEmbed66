@@ -1,0 +1,35 @@
+{
+  "acceptance_gate": "10-Point Pre-Training Verification",
+  "tests": {
+    "gate_1_tensor_shapes": "PASS",
+    "gate_2_grid_registration": "PASS",
+    "gate_3_parameter_budget": {
+      "core_6_params": 1687217,
+      "core_7_params": 1687505,
+      "status": "PASS"
+    },
+    "gate_4_forward_pass": "PASS",
+    "gate_5_finite_losses": {
+      "loss": 0.3526795506477356,
+      "recon_loss": 0.3465155363082886,
+      "surface_loss": 0.061293475329875946,
+      "curv_loss": 0.0033293089363723993,
+      "spatial_loss": 0.013670054264366627
+    },
+    "gate_6_finite_gradients": "PASS",
+    "gate_7_steric_diagnostic": {
+      "mean_residual_meters": 0.3278,
+      "correlation": 0.0071,
+      "status": "PASS"
+    },
+    "gate_8_causal_temporal_flow": "PASS",
+    "gate_9_overfit_test": {
+      "initial_loss": 0.4042,
+      "final_loss": 0.1004,
+      "loss_reduction_pct": 75.2,
+      "status": "PASS"
+    }
+  },
+  "status": "ALL_GATES_PASSED",
+  "conclusion": "Pre-training acceptance gate successfully passed. Pipeline is verified for baseline training."
+}

@@ -1,0 +1,42 @@
+# Dependency & runtime
+node_modules/
+.venv/
+env/
+venv/
+dist/
+temp_user_data/
+web_backup_*/
+__pycache__/
+*.py[cod]
+*$py.class
+*.log
+.env
+
+# Temporary scratch & test debug files
+scroll_snap_*.png
+scroll_*.png
+final_*.png
+fixed_*.png
+vercel_render.png
+output.pdf
+snap*.png
+localhost_*.png
+test_*.png
+test_*.html
+test_*.js
+test_*.pdf
+test_literal.txt
+check_*.js
+inspect_*.js
+debug_*.js
+find_visible.js
+save_main.js
+print_tags.js
+extract_parts.js
+verify_*.js
+*.zip
+*.bat
+
+# OS files
+.DS_Store
+Thumbs.db
