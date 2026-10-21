@@ -56,8 +56,12 @@ def generate_domain_land_mask(lats, lons):
                 
     return mask
 
-def run_data_audit(export_path="reports/data_audit_report.json"):
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+
+def run_data_audit(export_path=None):
     """Runs systematic validation checks and writes structured audit report."""
+    if export_path is None:
+        export_path = os.path.join(ROOT_DIR, "reports", "data_audit_report.json")
     os.makedirs(os.path.dirname(export_path), exist_ok=True)
     
     lats, lons = generate_bay_of_bengal_grid()

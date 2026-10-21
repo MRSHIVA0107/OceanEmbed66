@@ -11,6 +11,7 @@ __pycache__/
 *$py.class
 *.log
 .env
+.pytest_cache/
 
 # Temporary scratch & test debug files
 scroll_snap_*.png

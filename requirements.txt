@@ -1,0 +1,12 @@
+# OceanEmbed Core & Machine Learning Dependencies
+numpy>=1.21.0
+scipy>=1.7.0
+torch>=1.12.0
+scikit-learn>=1.0.0
+
+# API & Serving
+fastapi>=0.85.0
+uvicorn>=0.18.0
+
+# Development & Testing
+pytest>=7.0.0

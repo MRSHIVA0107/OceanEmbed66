@@ -3,12 +3,23 @@ const path = require('path');
 const { spawn } = require('child_process');
 const http = require('http');
 
+const rootDir = path.resolve(__dirname, '../..');
+
 function getBase64(filename) {
-  const p = path.join(__dirname, filename);
-  if (fs.existsSync(p)) {
-    const data = fs.readFileSync(p);
-    return `data:image/png;base64,${data.toString('base64')}`;
+  const searchDirs = [
+    path.join(rootDir, 'assets', 'slides'),
+    path.join(rootDir, 'assets', 'screenshots'),
+    path.join(rootDir, 'assets', 'renders'),
+    rootDir
+  ];
+  for (const dir of searchDirs) {
+    const p = path.join(dir, filename);
+    if (fs.existsSync(p)) {
+      const data = fs.readFileSync(p);
+      return `data:image/png;base64,${data.toString('base64')}`;
+    }
   }
+  console.warn('Warning: Asset not found: ' + filename);
   return '';
 }
 
@@ -1283,12 +1294,12 @@ const html = `<!DOCTYPE html>
 </html>
 `;
 
-const htmlPath = path.join(__dirname, 'presentation_deck.html');
+const htmlPath = path.join(rootDir, 'docs', 'presentations', 'presentation_deck.html');
 fs.writeFileSync(htmlPath, html, 'utf-8');
 console.log('Written presentation_deck.html (' + (fs.statSync(htmlPath).size / 1024).toFixed(1) + ' KB)');
 
 async function printDeck() {
-  const pdfPath = path.join(__dirname, 'OceanEmbed_Idea_Submission_Presentation.pdf');
+  const pdfPath = path.join(rootDir, 'docs', 'presentations', 'OceanEmbed_Idea_Submission_Presentation.pdf');
   const chromePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
   
   const chrome = spawn(chromePath, [

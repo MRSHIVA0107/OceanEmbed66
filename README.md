@@ -103,23 +103,67 @@ OceanEmbed was benchmarked against the official **WMO Global ARGO Profiling Netw
 
 ---
 
-## 📁 Repository Structure
+## 📁 Professional Repository Architecture
 
 ```
-├── index.html                 # Production WebGL 3D intelligence platform
-├── style.css                  # Core application styling & UI theme
-├── landing.js                 # Landing interactions & view controller
-├── scrolly.js                 # Scrollytelling interactive engine
-├── ocean3d.js                 # Three.js 3D Volumetric Ocean Cube & shader pipeline
-├── OrbitControls.js           # Three.js camera controls
-├── acoustics.js               # Mackenzie sound-speed formulation & acoustic engine
-├── model.py                   # PyTorch ConvNeXt + Causal ConvGRU + NeOF implementation
-├── losses.py                  # Physics-informed steric and curvature loss functions
-├── baselines.py               # Ridge regression & monthly climatology benchmark suites
-├── OceanEmbed_Official_Concept_Document.pdf   # 5-Page Official Concept Document (MIC / AICTE)
-├── OceanEmbed_Idea_Submission_Presentation.pdf # 12-Slide 16:9 Detailed Pitch Presentation Deck
-├── netlify.toml               # Netlify edge deployment configuration
-└── package.json               # Node.js project manifest & build dependencies
+OceanEmbed/
+├── .github/                       # GitHub CI/CD Workflows
+│   └── workflows/ci.yml           # Automated lint, test, and build validation
+├── api/                           # Precomputed / static mock API payloads
+│   ├── argo_matchups.json         # Real collocated ARGO validation matchups
+│   ├── metadata.json              # Platform telemetry and model specifications
+│   ├── hazard_perimeter*.geojson  # Rapid intensification hazard polygon vectors
+│   └── bulletin*.html             # INCOIS marine advisory bulletin templates
+├── assets/                        # Design, marketing, visual assets & renders
+│   ├── branding/                  # Official high-resolution logos
+│   ├── domain/                    # Indo-Pacific study domain nautical charts
+│   ├── renders/                   # 3D volumetric thermal renders & heat maps
+│   ├── screenshots/               # Production live-demo UI screenshots
+│   └── slides/                    # Technical slide deck graphics
+├── data/                          # Data store & checkpoints
+│   ├── checkpoints/               # Trained neural network weights
+│   ├── processed/                 # Processed oceanic arrays and grid definitions
+│   └── day_*.json                 # Daily precomputed operational predictions
+├── docs/                          # Architecture blueprints, specifications & presentations
+│   ├── blueprints/                # Master system blueprints & architectural RFCs
+│   ├── presentations/             # 16:9 pitch presentation decks (PDF & HTML)
+│   └── specifications/            # Mathematical & data specifications (PDF & HTML)
+├── experiments/                   # Early research prototypes & baselines
+│   └── prototypes/                # Initial baseline scripts & reference implementations
+├── reports/                       # Scientific verification & pre-training reports
+│   ├── data_audit_report.json     # Pre-training grid and domain audit
+│   └── pre_training_acceptance_report.json # 10-point synthetic validation gate
+├── scripts/                       # Modular pipeline & operational tooling
+│   ├── build/                     # Production Netlify & static packaging scripts
+│   ├── data/                      # Neural inference & data verification scripts
+│   ├── dev/                       # Local development servers & map capturing
+│   └── migrations/                # Historical deployment & patching scripts
+├── src/                           # Core Python backend & ML package
+│   ├── api/                       # FastAPI application & REST routing
+│   ├── data/                      # Dataset loaders, downloaders & export engine
+│   ├── evaluation/                # Benchmark suites & advisory bulletin generators
+│   ├── models/                    # PyTorch ConvNeXt, ConvGRU & NeOF implementations
+│   ├── physics/                   # Mackenzie acoustics, steric constraints & diagnostics
+│   └── cli.py                     # CLI management entrypoint
+├── tests/                         # Automated integration test suite
+│   ├── __init__.py
+│   └── test_pipeline.py           # 11-point end-to-end pipeline test
+├── web/                           # Production web application (Single source of truth)
+│   ├── index.html                 # Main web application entrypoint
+│   ├── style.css                  # Core CSS design system
+│   ├── app.js                     # Workstation state & map controller
+│   ├── ocean3d.js                 # Three.js 3D Volumetric Ocean Engine
+│   ├── acoustics.js               # Acoustic shadow zone & SLD calculator
+│   ├── OrbitControls.js           # 3D viewport camera controls
+│   ├── three.min.js               # WebGL 3D rendering library
+│   └── variants/                  # Landing page variants & extracted styles
+├── .gitignore                     # Git ignore rules
+├── _redirects                     # Edge rewrite & proxy rules
+├── LICENSE                        # MIT License
+├── netlify.toml                   # Netlify build configuration
+├── package.json                   # NPM build scripts & metadata
+├── requirements.txt               # Python package dependencies
+└── setup.py                       # Python setuptools packaging manifest
 ```
 
 ---
@@ -127,21 +171,38 @@ OceanEmbed was benchmarked against the official **WMO Global ARGO Profiling Netw
 ## 💻 Local Quickstart
 
 ### Prerequisites
-* Node.js (v18+)
-* Python 3.9+ (optional, for ML model pipelines)
+* **Node.js** (v18+)
+* **Python** (3.9+)
 
-### Run the Interactive Web Platform Locally
+### 1. Build & Run the Web Application
 ```bash
 # Clone the repository
 git clone https://github.com/<your-username>/oceanembed.git
 cd oceanembed
 
-# Serve with any local HTTP server
-npx serve .
-# Or via Python
-python -m http.server 8080
+# Build the production distribution bundle
+npm run build
+
+# Start the local development server
+npm run serve
 ```
-Open your browser at `http://localhost:8080` (or `http://localhost:8080/#demo` for the 3D Operations Console).
+Open your browser at [http://localhost:8080](http://localhost:8080) (or [http://localhost:8080/#demo](http://localhost:8080/#demo) for the 3D Operations Console).
+
+### 2. Run Data Audit & Verification
+```bash
+# Run data audit
+npm run audit
+# or: python scripts/data/data_audit.py
+```
+
+### 3. Run FastAPI Backend
+```bash
+# Install Python dependencies
+pip install -r requirements.txt
+
+# Launch FastAPI development server
+uvicorn src.api.main:app --reload --port 8000
+```
 
 ---
 

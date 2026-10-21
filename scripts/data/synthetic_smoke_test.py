@@ -23,7 +23,9 @@ import torch.nn.functional as F
 import torch.optim as optim
 import numpy as np
 
-# Ensure local imports
+# Ensure local imports and prototype model imports
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, os.path.join(ROOT_DIR, "experiments", "prototypes"))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from model import OceanEmbedLiteST, count_parameters
 from losses import OceanEmbedLoss, compute_steric_diagnostic
@@ -79,8 +81,10 @@ def create_synthetic_batch(batch_size=4, in_channels=6, H=68, W=60):
         "target_sla": x_seq[:, -1, 1:2].squeeze(1)  # SLA channel at day t
     }
 
-def run_pre_training_acceptance_gate(export_path="reports/pre_training_acceptance_report.json"):
+def run_pre_training_acceptance_gate(export_path=None):
     """Executes the complete 10-point acceptance gate."""
+    if export_path is None:
+        export_path = os.path.join(ROOT_DIR, "reports", "pre_training_acceptance_report.json")
     os.makedirs(os.path.dirname(export_path), exist_ok=True)
     report = {"acceptance_gate": "10-Point Pre-Training Verification", "tests": {}, "status": "IN_PROGRESS"}
     print("=" * 70)

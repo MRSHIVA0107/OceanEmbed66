@@ -15,7 +15,8 @@ const mime = {
   '.geojson': 'application/geo+json; charset=utf-8'
 };
 
-const distDir = path.join(__dirname, 'dist');
+const rootDir = path.resolve(__dirname, '../..');
+const distDir = path.join(rootDir, 'dist');
 const PORT = 8080;
 
 const server = http.createServer((req, res) => {

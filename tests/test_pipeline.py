@@ -12,10 +12,16 @@ Validates:
 9. Official INCOIS Marine Advisory Bulletin Generation
 10. Vector GeoJSON Cyclone Hazard Perimeter Export
 11. Point Sounding CSV Extraction & Formatting
-"""
+import os
+import sys
+
+# Ensure repository root is in sys.path
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
+
 import numpy as np
 import json
-import os
 from src.api.main import (
     get_metadata,
     get_layer_prediction,
