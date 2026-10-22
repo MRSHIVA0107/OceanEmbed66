@@ -11,13 +11,19 @@ Provides high-performance REST APIs for Ocean Heat Risk Intelligence:
 - Static mounting for dashboard UI
 """
 import os
+import sys
 import json
 import numpy as np
 import torch
 from fastapi import FastAPI, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, PlainTextResponse, HTMLResponse
+
+# Robust Root Directory Anchor for Render & Container Runtimes
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
 
 from src.physics.diagnostics import compute_profile_d26_tchp, compute_grid_d26_tchp
 from src.physics.argo_matchup import bilinear_collocate_field
@@ -36,8 +42,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-DATA_DIR = "data/processed"
+DATA_DIR = os.path.join(ROOT_DIR, "data", "processed")
 PRED_DIR = os.path.join(DATA_DIR, "predictions")
+CHECKPOINTS_DIR = os.path.join(ROOT_DIR, "data", "checkpoints")
+API_STATIC_DIR = os.path.join(ROOT_DIR, "api")
+DATA_STATIC_DIR = os.path.join(ROOT_DIR, "data")
 
 # Load Global Shared Assets
 lats = np.load(os.path.join(DATA_DIR, "lats.npy"))       # [68]
@@ -363,22 +372,41 @@ def get_system_health():
         "status": "OPERATIONAL",
         "platform": "OceanEmbed Enterprise Intelligence v2.2.0",
         "models_loaded": {
-            "core-6": os.path.exists(os.path.join("data/checkpoints", "oceanembed_core-6_best.pth")),
-            "core-7": os.path.exists(os.path.join("data/checkpoints", "oceanembed_core-7_best.pth"))
+            "core-6": os.path.exists(os.path.join(CHECKPOINTS_DIR, "oceanembed_core-6_best.pth")),
+            "core-7": os.path.exists(os.path.join(CHECKPOINTS_DIR, "oceanembed_core-7_best.pth"))
         },
         "device": "CPU (Optimized Intel/AMD PyTorch runtime)",
         "ocean_grid_shape": [68, 60],
         "cached_dates": list(cached_tchp.keys())
     }
 
-# Mount Static Web Dashboard
-web_dir = os.path.abspath("web")
-if os.path.exists(web_dir):
-    app.mount("/static", StaticFiles(directory=web_dir), name="static")
+# Fallback compatibility routes for static JSON queries
+@app.get("/api/metadata.json")
+def get_metadata_json():
+    meta_path = os.path.join(API_STATIC_DIR, "metadata.json")
+    if os.path.exists(meta_path):
+        with open(meta_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return get_metadata()
 
-@app.get("/")
-def serve_index():
-    index_file = os.path.join(web_dir, "index.html")
-    if os.path.exists(index_file):
-        return FileResponse(index_file)
-    return {"message": "OceanEmbed API is online. Dashboard files in /web directory."}
+@app.get("/api/argo_matchups.json")
+def get_argo_matchups_json():
+    argo_path = os.path.join(API_STATIC_DIR, "argo_matchups.json")
+    if os.path.exists(argo_path):
+        with open(argo_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return get_argo_matchups()
+
+# Mount Static /data for pre-computed operational days (day_*.json)
+if os.path.exists(DATA_STATIC_DIR):
+    app.mount("/data", StaticFiles(directory=DATA_STATIC_DIR), name="data_static")
+
+# Mount Static Web Dashboard (checks dist/ first for production bundle, then web/)
+dist_dir = os.path.join(ROOT_DIR, "dist")
+web_dir = os.path.join(ROOT_DIR, "web")
+static_dir = dist_dir if (os.path.exists(dist_dir) and os.path.exists(os.path.join(dist_dir, "index.html"))) else web_dir
+
+if os.path.exists(static_dir):
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
+    app.mount("/", StaticFiles(directory=static_dir, html=True), name="frontend")
+
