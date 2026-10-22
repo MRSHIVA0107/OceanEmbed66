@@ -12,6 +12,8 @@ __pycache__/
 *.log
 .env
 .pytest_cache/
+readme_PUB/
+readme_pub/
 .readme_PUB/
 # Temporary scratch & test debug files
 scroll_snap_*.png
