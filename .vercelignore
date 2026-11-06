@@ -1,0 +1,8 @@
+# Ignore Python backend dependencies so Vercel does not auto-detect FastAPI serverless runtime
+requirements.txt
+setup.py
+src/
+experiments/
+tests/
+reports/
+.venv/
