@@ -6,7 +6,8 @@
     "build": "node scripts/build/build.js",
     "serve": "node scripts/dev/serve_local.js",
     "deck": "node scripts/build/build_presentation_deck.js",
-    "audit": "python scripts/data/data_audit.py"
+    "audit": "python scripts/data/data_audit.py",
+    "test:assets": "node scripts/dev/verify_assets.js"
   },
   "keywords": [
     "oceanography",
