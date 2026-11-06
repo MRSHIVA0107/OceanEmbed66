@@ -1,0 +1,30 @@
+{
+  "version": 2,
+  "buildCommand": "node scripts/build/build.js",
+  "outputDirectory": "dist",
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/api/metadata", "destination": "/api/metadata.json" },
+    { "source": "/api/argo/matchups", "destination": "/api/argo_matchups.json" },
+    { "source": "/api/export/geojson", "destination": "/api/hazard_perimeter.geojson" },
+    { "source": "/api/bulletin", "destination": "/api/bulletin.html" },
+    { "source": "/((?!api/|data/|.*\\..*).*)", "destination": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" }
+      ]
+    },
+    {
+      "source": "/(.*).json",
+      "headers": [
+        { "key": "Content-Type", "value": "application/json" },
+        { "key": "Cache-Control", "value": "public, max-age=86400" }
+      ]
+    }
+  ]
+}
